@@ -14,7 +14,7 @@ ACHEX_PORT = 4010
 
 GOOGLE_CLIENT_ID = "google-smart-home"
 GOOGLE_CLIENT_SECRET = "33713266dd0967d776d43bbc65aba1ec6d16c278"
-#GOOGLE_REDIRECT_URI = "https://oauth-redirect.googleusercontent.com/r/SEU_AGENT_ID"
+GOOGLE_REDIRECT_URI = "https://oauth-redirect.googleusercontent.com/r/home-jordan"
 #33713266dd0967d776d43bbc65aba1ec6d16c278
 #f651b89eeda2a637b8ebf04c28fb397c
 AUTH_CODES = {}
@@ -87,16 +87,22 @@ def oauth_authorize():
     client_id = request.args.get('client_id')
     redirect_uri = request.args.get('redirect_uri')
     state = request.args.get('state')
+    response_type = request.args.get('response_type')
 
-    print("OAuth client_id:", client_id)
-    print("OAuth redirect_uri:", redirect_uri)
-    print("OAuth response_type:", response_type)
+    print("=== OAUTH AUTHORIZE ===")
+    print("client_id:", client_id)
+    print("redirect_uri:", redirect_uri)
+    print("response_type:", response_type)
+    print("state recebido:", bool(state))
 
     if client_id != GOOGLE_CLIENT_ID:
        return "Invalid client_id", 400
 
-    #if redirect_uri != GOOGLE_REDIRECT_URI:
-    #    return "Invalid redirect_uri", 400
+    if response_type != "code":
+        return "Unsupported response_type", 400
+
+    if redirect_uri != GOOGLE_REDIRECT_URI:
+        return "Invalid redirect_uri", 400
 
     # Aqui você faria seu login.
     # Para teste, pode considerar um usuário fixo.
@@ -108,11 +114,16 @@ def oauth_authorize():
         "user_id": user_id
     }
 
-    return redirect(
+    callback_url = (
         f"{redirect_uri}"
         f"?code={code}"
         f"&state={state}"
     )
+
+    print("REDIRECT PARA:")
+    print(callback_url)
+
+    return redirect(callback_url)
 
 @app.route('/oauth/token', methods=['POST'])
 def oauth_token():

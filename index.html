@@ -5,8 +5,26 @@ import time
 from flask import Flask, jsonify, request, redirect
 import secrets
 from datetime import datetime, timedelta, timezone
+import logging
+import sys
+
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s [%(levelname)s] %(message)s',
+#     handlers=[
+#         logging.StreamHandler(sys.stdout)
+#     ]
+# )
+
+# logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 # Configurações do Socket TCP da Achex
 ACHEX_HOST = "ws.achex.ca"
@@ -89,11 +107,11 @@ def oauth_authorize():
     state = request.args.get('state')
     response_type = request.args.get('response_type')
 
-    print("=== OAUTH AUTHORIZE ===", flush=True)
-    print("client_id:", client_id, flush=True)
-    print("redirect_uri:", redirect_uri, flush=True)
-    print("response_type:", response_type, flush=True)
-    print("state recebido:", bool(state), flush=True)
+    app.logger.info("=== OAUTH AUTHORIZE ===", flush=True)
+    app.logger.info("client_id:", client_id, flush=True)
+    app.logger.info("redirect_uri:", redirect_uri, flush=True)
+    app.logger.info("response_type:", response_type, flush=True)
+    app.logger.info("state recebido:", bool(state), flush=True)
 
     if client_id != GOOGLE_CLIENT_ID:
        return "Invalid client_id", 400
@@ -120,8 +138,8 @@ def oauth_authorize():
         f"&state={state}"
     )
 
-    print("REDIRECT PARA:", flush=True)
-    print(callback_url, flush=True)
+    app.logger.info("REDIRECT PARA:", flush=True)
+    app.logger.info(callback_url, flush=True)
 
     return redirect(callback_url)
 

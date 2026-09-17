@@ -8,15 +8,15 @@ from datetime import datetime, timedelta, timezone
 import logging
 import sys
 
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format='%(asctime)s [%(levelname)s] %(message)s',
-#     handlers=[
-#         logging.StreamHandler(sys.stdout)
-#     ]
-# )
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -107,11 +107,11 @@ def oauth_authorize():
     state = request.args.get('state')
     response_type = request.args.get('response_type')
 
-    app.logger.info("=== OAUTH AUTHORIZE ===", flush=True)
-    app.logger.info("client_id:", client_id, flush=True)
-    app.logger.info("redirect_uri:", redirect_uri, flush=True)
-    app.logger.info("response_type:", response_type, flush=True)
-    app.logger.info("state recebido:", bool(state), flush=True)
+    logger.info("=== OAUTH AUTHORIZE ===")
+    logger.info("client_id:", client_id)
+    logger.info("redirect_uri:", redirect_uri)
+    logger.info("response_type:", response_type)
+    logger.info("state recebido:", bool(state))
 
     if client_id != GOOGLE_CLIENT_ID:
        return "Invalid client_id", 400
@@ -138,10 +138,22 @@ def oauth_authorize():
         f"&state={state}"
     )
 
-    app.logger.info("REDIRECT PARA:", flush=True)
-    app.logger.info(callback_url, flush=True)
+    logger.info("REDIRECT PARA:")
+    logger.info(callback_url)
 
     return redirect(callback_url)
+
+@app.route('/')
+def home():    
+    logger.info("=== OAUTH AUTHORIZE ===OKK")
+    return (
+        jsonify({
+            "status": "success",
+            "comando_enviado": "",
+            "message": "Comando enviado via TCP Socket puro com sucesso!",
+        }),
+        200,
+    )
 
 @app.route('/oauth/token', methods=['POST'])
 def oauth_token():
@@ -448,7 +460,7 @@ def disconnect(user):
 
 if __name__ == "__main__":
   port = int(os.environ.get("PORT", 5000))
-  gunicorn_logger = logging.getLogger('gunicorn.error')
-  app.logger.handlers = gunicorn_logger.handlers
-  app.logger.setLevel(gunicorn_logger.level)
+#   gunicorn_logger = logging.getLogger('gunicorn.error')
+#   app.logger.handlers = gunicorn_logger.handlers
+#   app.logger.setLevel(gunicorn_logger.level)
   app.run(host="0.0.0.0", port=port)
